@@ -26,7 +26,7 @@ void main(void)
     }
     printf("\n");
   }
-    printf("\n");
+  printf("---------------\n");
   
 // сортируем
   for(int i = 0; i < lenArr; i++)
@@ -41,18 +41,6 @@ void main(void)
       }
     }
   }
-
-// выводим отсортированный массив
-  for(int ll = 0; ll < lenLine; ll++)
-  {
-    for(int lc = 0; lc < lenCol; lc++)
-    {
-      printf("%3d", arr2d[ll][lc]);
-    }
-    printf("\n");
-  }
-    printf("\n");
-
 /*
 // Изначальный вариант, когда не знал, что можно перебрать все элементы двумерного массива как одномерного
 // и проходился по строкам
@@ -90,4 +78,16 @@ void main(void)
     }
   }
 */
+
+// выводим отсортированный массив
+  for(int ll = 0; ll < lenLine; ll++)
+  {
+    for(int lc = 0; lc < lenCol; lc++)
+    {
+      printf("%3d", arr2d[ll][lc]);
+    }
+    printf("\n");
+  }
+    printf("\n");
+
 }

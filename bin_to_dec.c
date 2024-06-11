@@ -53,13 +53,9 @@ void fn_binary_code(char *str_bin, INT64U *res)
 
   // длина строки
   int len_bits = strlen(str_bin);
-  // сколько бит считать (если строка короче MAX_BITS)
-  int count_bits = (len_bits < MAX_BITS ? len_bits : MAX_BITS);
-  // до какого бита идти (если строка длиннее MAX_BITS)
-  int end_bit = (len_bits < MAX_BITS ? 0 : len_bits - MAX_BITS);
 
   // проходимся по символам с конца
-  for (int i = len_bits - 1; i >= end_bit; i--)
+  for (int i = len_bits - 1; i >= 0; i--)
   {
     int deg = len_bits - i - 1; // в какую степень возводить
 
@@ -76,7 +72,7 @@ void fn_binary_code(char *str_bin, INT64U *res)
   }
 
   // результат
-  res[0] = count_bits; // сколько бит
+  res[0] = len_bits; // сколько бит
   res[1] = r; // 10-е число
 }
 

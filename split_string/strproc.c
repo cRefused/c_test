@@ -118,7 +118,7 @@ char **fn_split_string(char *str, char *sep, int len)
     strcpy(arr[i], tmp);
     // продолжить выделять область до следующего разделителя
     tmp = strtok(NULL, sep);
-    //printf("[%-2d][%p]\n", i, &arr[i]);
+    printf("[%-2d][%p]\n", i, &arr[i]);
     i++;
   }
 

@@ -17,7 +17,7 @@ void fn_clean_buf(char *str)
 
   if(str[i] != '\n')
   {
-    while((b = getchar() != '\n') && (b != EOF))  ;
+    while((b = getchar()) != '\n' && b != EOF)  ;
   }
 
   // фикс конца строки после fgets

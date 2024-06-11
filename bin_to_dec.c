@@ -79,7 +79,6 @@ int main(void)
 {
   char str_bin[MAX_BITS]; // тут будет введенная строка
   INT64U res[2]; // массив значений (сколько бит, 10-е число)
-  INT64U signed_d, unsigned_d;
 
   while(1)
   {
@@ -92,16 +91,9 @@ int main(void)
       break;
     }
 
-    unsigned_d = res[1];
-    signed_d = res[1] / 2;
     printf("\n"
-          "Двоичное: [%d \bbit][%s]\n"
-          "Десятичное:\n"
-          "unsigned: %llu \n"
-          "signed: %lld \n",
-          res[0], str_bin,
-          unsigned_d,
-          signed_d);
+          "Двоичное: [%d \bbit] [%s]\nДесятичное: %llu\n",
+          res[0], str_bin, res[1]);
   }
   return 0;
 }

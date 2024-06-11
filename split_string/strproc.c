@@ -122,6 +122,8 @@ char **fn_split_string(char *str, char *sep, int len)
     i++;
   }
 
+  printf("%-20s **arr указывает на адрес памяти [%p] \n", "fn_split_string(): ", arr);
+
   return arr;
 }
 

@@ -10,3 +10,9 @@ void fn_garbage_removal(char *str, char *s, char *o);
 
 // удаление лишних пробелов
 void fn_str_trim(char *str, char *s);
+
+// разбиваем по словам
+char **fn_split_string(char *my_string, char *sep, int len);
+
+// кол-во строк в массиве, где будут храниться слова
+int fn_count_len(char *str, char *sep);

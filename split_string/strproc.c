@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 // фикс конца строки после fgets
 // плюс чистка буфера
@@ -33,7 +34,7 @@ void fn_del_char(char *str, int i)
   }
 }
 
-// заменяем символы, перечисленные в other_spr на пробел
+// заменяем символы, перечисленные в other_sep на пробел
 // если сразу удалять, некоторые проскакивают
 // т.к. смещается содержимое строки
 // и на проверяемой позиции оказывается символ,
@@ -79,5 +80,48 @@ void fn_str_trim(char *str, char *s)
     str[i] = '\0';
     i--;
   }
+}
+
+// кол-во строк в массиве, где будут храниться слова
+int fn_count_len(char *str, char *sep)
+{
+  int len = 0;
+  for(int i = 0; str[i] != '\0'; i++)
+  {
+    if(str[i] == sep[0])
+    {
+      len++;
+    }
+  }
+
+  return len;
+}
+
+// разбиваем по словам
+char **fn_split_string(char *str, char *sep, int len)
+{
+  char **arr, *tmp;
+  int i = 0;
+
+  // выделяем память под строки
+  arr = (char**)malloc(len * sizeof(char*));
+
+  // передаем в tmp область до первого разделителя
+  tmp = strtok(str, sep);
+
+  // проходимся в цикле
+  while(tmp != NULL && i <= len)
+  {
+    // выделяем память под слово
+    arr[i] = (char*)malloc(strlen(tmp) + 1);
+    // заносим слово в массив
+    strcpy(arr[i], tmp);
+    // продолжить выделять область до следующего разделителя
+    tmp = strtok(NULL, sep);
+    //printf("[%-2d][%p]\n", i, &arr[i]);
+    i++;
+  }
+
+  return arr;
 }
 

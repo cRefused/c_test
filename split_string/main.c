@@ -21,13 +21,13 @@
 int main(void)
 {
   // пробел в качестве разделителя
-  char spr[] = " ";
+  char sep[] = " ";
   // эти символы будем убирать
-  char other_spr[] = ".,!@#$^&*/\\\%{}[]()-";
+  char other_sep[] = ".,!@#$^&*/\\\%{}[]()-";
   // сюда будем складывать слова
-  char **arr, *tmp;
-  // вспомогательные переменные для счетчиков
-  int len = 0, c = 0, i = 0;
+  char **arr;
+  // количество строк в массиве со словами
+  int len;
 
   // фраза, которую надо разбить на слова
   char my_string[] = "Функция#  (strtok),  [выделяет],,,  **очередную.- {часть} /- /строки, на которую указывает  аргумент str!!!";
@@ -42,49 +42,27 @@ int main(void)
   fn_clean_buf(my_string);
 */
   // удаляем ненужные символы
-  fn_garbage_removal(my_string, spr, other_spr);
+  fn_garbage_removal(my_string, sep, other_sep);
 
   // удаляем лишние пробелы
-  fn_str_trim(my_string, spr);
+  fn_str_trim(my_string, sep);
 
   // кол-во строк в массиве, где будут храниться слова
-  for(i = 0; my_string[i] != '\0'; i++)
-  {
-    if(my_string[i] == spr[0])
-    {
-      len++;
-    }
-  }
+  len = fn_count_len(my_string, sep);
 
-  // выделяем память под строки
-  arr = (char**)malloc(len * sizeof(char*));
-
-  // передаем в tmp область до первого разделителя
-  tmp = strtok(my_string, spr);
-
-  // проходимся в цикле
-  while(tmp != NULL && c <= len)
-  {
-    // выделяем память под слово
-    arr[c] = (char*)malloc(strlen(tmp) + 1);
-    // заносим слово в массив
-    strcpy(arr[c], tmp);
-    c++;
-    // продолжить выделять область до следующего разделителя
-    tmp = strtok(NULL, spr);
-  }
+  // разбиваем фразу по словам
+  arr = fn_split_string(my_string, sep, len);
 
   // выводим результат
-  for(i = 0; i <= len; i++)
+  for(int i = 0; i <= len; i++)
   {
+
     printf("[%-2d][%s]\n", i, arr[i]);
-    /*
-    for(j = 0; j < strlen(arr[i]); j++)
+    // очищаем память
+    if(arr[i] != NULL)
     {
-      printf("[%c]", arr[i][j]);
+      free(arr[i]);
     }
-    printf("\n");
-    */
   }
   printf("\n");
   return 0;

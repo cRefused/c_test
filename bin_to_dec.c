@@ -12,7 +12,7 @@ typedef unsigned long long int INT64U;
 const INT64U max_num_x64 = 9223372036854775807ull; // ограничения для 64 бит
 
 // возведение числа в степень
-INT64U fnExp(int n, int e)
+INT64U fn_exp(int n, int e)
 {
   INT64U result = 1;
   for(int i = 0; i < e; i++)
@@ -49,7 +49,7 @@ void fn_binary_code(char *str_bin, INT64U *res)
     // если '1', возводим в соотв. степень и плюсуем к результату
     if(str_bin[i] == '1')
     {
-      r = (r + fnExp(2, deg) >= max_num_x64 ? max_num_x64 : r + fnExp(2, deg));
+      r = (r + fn_exp(2, deg) >= max_num_x64 ? max_num_x64 : r + fn_exp(2, deg));
     }
     else if(str_bin[i] == 10)
     {

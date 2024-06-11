@@ -51,12 +51,15 @@ int main(void)
   len = fn_count_len(my_string, sep);
 
   printf("\n");
-  printf("%-20s **arr указывает на адрес [%p] \n", "main(): ", arr);
+  printf("\nline: %-4d | %-20s | **arr указывает на адрес [%p] \n",
+    __LINE__, "main()", arr);
 
   // разбиваем фразу по словам
   arr = fn_split_string(my_string, sep, len);
 
-  printf("%-20s **arr указывает на адрес [%p] \n", "main(): ", arr);
+  printf("\nline: %-4d | %-20s | **arr указывает на адрес [%p] \n",
+    __LINE__, "main()", arr);
+
 
   // выводим результат
   printf("\nсодержимое памяти по адресу [%p]: \n\n", arr);

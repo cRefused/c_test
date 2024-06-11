@@ -55,6 +55,10 @@ void fn_binary_code(char *str_bin, INT64U *res)
     {
       str_bin[i] = '\0';
     }
+    else
+    {
+      str_bin[i] = '0';
+    }
   }
 
   // результат
@@ -64,7 +68,7 @@ void fn_binary_code(char *str_bin, INT64U *res)
 
 int main(void)
 {
-  char str_bin[MAX_BITS]; // тут будет введенная строка
+  char str_bin[MAX_BITS + 1]; // тут будет введенная строка
   INT64U res[2]; // массив значений (сколько бит, 10-е число)
   fn_binary_code(str_bin, res); // вызываем считалку, которая заполнит наш массив
   printf(" Двоичное: [%d \bbit][%s]\n Десятичное: %lld \n", res[0], str_bin, res[1]);

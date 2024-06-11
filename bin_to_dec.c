@@ -9,7 +9,25 @@
 
 typedef unsigned long long int INT64U;
 
-const INT64U max_num_x64 = 9223372036854775807ull; // ограничения для 64 бит
+const INT64U max_num_x64 = 9223372036854775807; // ограничения для signed 64 бит
+
+// чистка буфера
+void fn_clean_buf(char *str)
+{
+  char b;
+  int i = (strlen(str) - 1 < 0 ? 0 : strlen(str) - 1);
+
+  if(str[i] != '\n')
+  {
+    while((b = getchar() != '\n') && (b != EOF))  ;
+  }
+
+  // фикс конца строки после fgets
+  if(str[i] == '\n')
+  {
+    str[i] = '\0';
+  }
+}
 
 // возведение числа в степень
 INT64U fn_exp(int n, int e)
@@ -17,14 +35,7 @@ INT64U fn_exp(int n, int e)
   INT64U result = 1;
   for(int i = 0; i < e; i++)
   {
-    if(result * n >= max_num_x64)
-    {
-      return max_num_x64;
-    }
-    else
-    {
-      result *= n;
-    }
+    result *= n;
   }
   return result;
 }
@@ -33,23 +44,13 @@ INT64U fn_exp(int n, int e)
 void fn_binary_code(char *str_bin, INT64U *res)
 {
   INT64U r = 0; // результат (10-е число)
-  char buf; // для чистки буфера
 
   printf("\nВведите двоичное число (максимум %d \bbit). "
           "Для выхода введите 'q': ", MAX_BITS - 1);
   fgets(str_bin, MAX_BITS, stdin); // передаем строку в массив
 
   // чистим буфер
-  if(str_bin[strlen(str_bin) -1] != '\n')
-  {
-    while((buf = getchar() != '\n') && (buf != EOF))  ;
-  }
-
-  // фикс конца строки после fgets
-  if(str_bin[strlen(str_bin) -1] == '\n')
-  {
-    str_bin[strlen(str_bin) -1] = '\0';
-  }
+  fn_clean_buf(str_bin);
 
   // длина строки
   int len_bits = strlen(str_bin);
@@ -62,7 +63,7 @@ void fn_binary_code(char *str_bin, INT64U *res)
     // если '1', возводим в соотв. степень и плюсуем к результату
     if(str_bin[i] == '1')
     {
-      r = (r + fn_exp(2, deg) >= max_num_x64 ? max_num_x64 : r + fn_exp(2, deg));
+      r = r + fn_exp(2, deg);
     }
     // меняем другие символы на '0', если ввели абракадабру (кроме буквы выхода)
     else if(str_bin[0] != 'q')
@@ -80,6 +81,8 @@ int main(void)
 {
   char str_bin[MAX_BITS]; // тут будет введенная строка
   INT64U res[2]; // массив значений (сколько бит, 10-е число)
+  INT64U signed_d, unsigned_d;
+
 
   while(1)
   {
@@ -92,7 +95,16 @@ int main(void)
       break;
     }
 
-    printf("\n Двоичное: [%d \bbit][%s]\n Десятичное: %lld \n", res[0], str_bin, res[1]);
+    unsigned_d = res[1];
+    signed_d = res[1] / 2;
+    printf("\n"
+          "Двоичное: [%d \bbit][%s]\n"
+          "Десятичное:\n"
+          "unsigned: %llu \n"
+          "signed: %lld \n",
+          res[0], str_bin,
+          unsigned_d,
+          signed_d);
   }
   return 0;
 }

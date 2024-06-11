@@ -56,7 +56,6 @@ int main(void)
   // выводим результат
   for(int i = 0; i <= len; i++)
   {
-
     printf("[%-2d][%s]\n", i, arr[i]);
     // очищаем память
     if(arr[i] != NULL)

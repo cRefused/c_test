@@ -35,7 +35,8 @@ void fn_binary_code(char *str_bin, INT64U *res)
   INT64U r = 0; // результат (10-е число)
   char buf; // для чистки буфера
 
-  printf("Введите двоичное число (максимум %d \bbit): ", MAX_BITS - 1);
+  printf("\nВведите двоичное число (максимум %d \bbit). "
+          "Для выхода введите 'q': ", MAX_BITS - 1);
   fgets(str_bin, MAX_BITS, stdin); // передаем строку в массив
 
   // чистим буфер
@@ -50,11 +51,12 @@ void fn_binary_code(char *str_bin, INT64U *res)
     str_bin[strlen(str_bin) -1] = '\0';
   }
 
-  int len_bits = strlen(str_bin); // длина строки
-  int count_bits = (len_bits < MAX_BITS ? len_bits : MAX_BITS); // сколько бит считать (если строка короче MAX_BITS)
-  int end_bit = (len_bits < MAX_BITS ? 0 : len_bits - MAX_BITS); // до какого бита идти (если строка длиннее MAX_BITS)
-
-
+  // длина строки
+  int len_bits = strlen(str_bin);
+  // сколько бит считать (если строка короче MAX_BITS)
+  int count_bits = (len_bits < MAX_BITS ? len_bits : MAX_BITS);
+  // до какого бита идти (если строка длиннее MAX_BITS)
+  int end_bit = (len_bits < MAX_BITS ? 0 : len_bits - MAX_BITS);
 
   // проходимся по символам с конца
   for (int i = len_bits - 1; i >= end_bit; i--)
@@ -66,7 +68,8 @@ void fn_binary_code(char *str_bin, INT64U *res)
     {
       r = (r + fn_exp(2, deg) >= max_num_x64 ? max_num_x64 : r + fn_exp(2, deg));
     }
-    else
+    // меняем другие символы на '0', если ввели абракадабру (кроме буквы выхода)
+    else if(str_bin[0] != 'q')
     {
       str_bin[i] = '0';
     }
@@ -81,8 +84,20 @@ int main(void)
 {
   char str_bin[MAX_BITS]; // тут будет введенная строка
   INT64U res[2]; // массив значений (сколько бит, 10-е число)
-  fn_binary_code(str_bin, res); // вызываем считалку, которая заполнит наш массив
-  printf(" Двоичное: [%d \bbit][%s]\n Десятичное: %lld \n", res[0], str_bin, res[1]);
+
+  while(1)
+  {
+    fn_binary_code(str_bin, res); // вызываем считалку, которая заполнит наш массив
+
+    // Если ввели q, выходим
+    if(str_bin[0] == 'q')
+    {
+      printf("Exit\n");
+      break;
+    }
+
+    printf("\n Двоичное: [%d \bbit][%s]\n Десятичное: %lld \n", res[0], str_bin, res[1]);
+  }
   return 0;
 }
 

@@ -15,6 +15,24 @@
 #include <string.h>
 #include <stdlib.h>
 
+// чистка буфера
+void fn_clean_buf(char *str)
+{
+  char b;
+  int i = (strlen(str) - 1 < 0 ? 0 : strlen(str) - 1);
+
+  if(str[i] != '\n')
+  {
+    while((b = getchar()) != '\n' && b != EOF)  ;
+  }
+
+  // фикс конца строки после fgets
+  if(str[i] == '\n')
+  {
+    str[i] = '\0';
+  }
+}
+
 // удаление символа по индексу
 void fn_del_char(char *str, int i)
 {
@@ -39,7 +57,7 @@ void fn_garbage_removal(char *str, char *s, char *o)
   int i, j, l = strlen(str);
 
   i = 0;
-  while(i < l - 1)
+  while(i < l)
   {
     for(j = 0; j < strlen(o); j++)
     {
@@ -90,13 +108,17 @@ int main(void)
   int len = 0, c = 0, i = 0;
 
   // фраза, которую надо разбить на слова
-  char my_string[] = "Функция#  (strtok),  [выделяет],,,  **очередную.- {часть} /- /строки, на которую указывает  аргумент str";
+  char my_string[] = "Функция#  (strtok),  [выделяет],,,  **очередную.- {часть} /- /строки, на которую указывает  аргумент str!!!";
 /*
-  const int size = 1024;
+  const int size = 257; // макс. размер строки + 1 бит
   char my_string[size];
-  fgets(my_string, size, stdin);
-*/
 
+  // вводим строку
+  fgets(my_string, size, stdin);
+
+  // чистим буфер
+  fn_clean_buf(my_string);
+*/
   // удаляем ненужные символы
   fn_garbage_removal(my_string, spr, other_spr);
 

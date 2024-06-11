@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_BITS 64 // максимум бит, которые будем считать
+#define MAX_BITS 65 // максимум бит, которые будем считать + 1 бит конца строки
 
 typedef unsigned long long int INT64U;
 
@@ -33,13 +33,28 @@ INT64U fn_exp(int n, int e)
 void fn_binary_code(char *str_bin, INT64U *res)
 {
   INT64U r = 0; // результат (10-е число)
+  char buf; // для чистки буфера
 
-  printf("Введите двоичное число (максимум %d \bbit): ", MAX_BITS);
-  fgets(str_bin, MAX_BITS + 1, stdin); // передаем строку в массив
+  printf("Введите двоичное число (максимум %d \bbit): ", MAX_BITS - 1);
+  fgets(str_bin, MAX_BITS, stdin); // передаем строку в массив
+
+  // чистим буфер
+  if(str_bin[strlen(str_bin) -1] != '\n')
+  {
+    while((buf = getchar() != '\n') && (buf != EOF))  ;
+  }
+
+  // фикс конца строки после fgets
+  if(str_bin[strlen(str_bin) -1] == '\n')
+  {
+    str_bin[strlen(str_bin) -1] = '\0';
+  }
 
   int len_bits = strlen(str_bin); // длина строки
   int count_bits = (len_bits < MAX_BITS ? len_bits : MAX_BITS); // сколько бит считать (если строка короче MAX_BITS)
   int end_bit = (len_bits < MAX_BITS ? 0 : len_bits - MAX_BITS); // до какого бита идти (если строка длиннее MAX_BITS)
+
+
 
   // проходимся по символам с конца
   for (int i = len_bits - 1; i >= end_bit; i--)
@@ -68,7 +83,7 @@ void fn_binary_code(char *str_bin, INT64U *res)
 
 int main(void)
 {
-  char str_bin[MAX_BITS + 1]; // тут будет введенная строка
+  char str_bin[MAX_BITS]; // тут будет введенная строка
   INT64U res[2]; // массив значений (сколько бит, 10-е число)
   fn_binary_code(str_bin, res); // вызываем считалку, которая заполнит наш массив
   printf(" Двоичное: [%d \bbit][%s]\n Десятичное: %lld \n", res[0], str_bin, res[1]);

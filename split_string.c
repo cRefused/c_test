@@ -15,21 +15,21 @@
 #include <string.h>
 #include <stdlib.h>
 
-// чистка буфера
+// фикс конца строки после fgets
+// плюс чистка буфера
 void fn_clean_buf(char *str)
 {
   char b;
   int i = (strlen(str) - 1 < 0 ? 0 : strlen(str) - 1);
 
-  if(str[i] != '\n')
-  {
-    while((b = getchar()) != '\n' && b != EOF)  ;
-  }
-
-  // фикс конца строки после fgets
   if(str[i] == '\n')
   {
     str[i] = '\0';
+  }
+  else
+  {
+    while((b = getchar()) != '\n' && b != EOF)
+      ;
   }
 }
 

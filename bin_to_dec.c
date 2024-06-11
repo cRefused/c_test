@@ -66,10 +66,6 @@ void fn_binary_code(char *str_bin, INT64U *res)
     {
       r = (r + fn_exp(2, deg) >= max_num_x64 ? max_num_x64 : r + fn_exp(2, deg));
     }
-    else if(str_bin[i] == 10)
-    {
-      str_bin[i] = '\0';
-    }
     else
     {
       str_bin[i] = '0';

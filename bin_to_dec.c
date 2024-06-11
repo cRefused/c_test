@@ -9,8 +9,6 @@
 
 typedef unsigned long long int INT64U;
 
-const INT64U max_num_x64 = 9223372036854775807; // ограничения для signed 64 бит
-
 // чистка буфера
 void fn_clean_buf(char *str)
 {
@@ -82,7 +80,6 @@ int main(void)
   char str_bin[MAX_BITS]; // тут будет введенная строка
   INT64U res[2]; // массив значений (сколько бит, 10-е число)
   INT64U signed_d, unsigned_d;
-
 
   while(1)
   {

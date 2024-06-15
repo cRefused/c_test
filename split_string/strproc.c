@@ -109,10 +109,12 @@ char **fn_split_string(char *str, char *sep, int len)
   // передаем в tmp область до первого разделителя
   tmp = strtok(str, sep);
 
+/*
   printf("\n");
   printf("line: %-4d | %-20s | **arr указывает на адрес [%p] \n",
     __LINE__, "fn_split_string()", arr);
   printf("\n");
+*/
 
   // проходимся в цикле
   while(tmp != NULL && i <= len)
@@ -124,8 +126,10 @@ char **fn_split_string(char *str, char *sep, int len)
     // продолжить выделять область до следующего разделителя
     tmp = strtok(NULL, sep);
 
+/*
     printf("line: %-4d | %-20s | &arr[%2d]: [%p] SIZE: %x \bbyte\n",
       __LINE__ ,"fn_split_string()", i, &arr[i], sizeof(arr[i]));
+*/
 
     i++;
   }

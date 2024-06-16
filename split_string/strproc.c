@@ -16,7 +16,9 @@ void fn_clean_buf(char *str)
   else
   {
     while((b = getchar()) != '\n' && b != EOF)
+    {
       ;
+    }
   }
 }
 

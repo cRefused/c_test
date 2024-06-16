@@ -35,9 +35,11 @@ void draw_map(int line, int col, char map[line][col])
   }
 }
 
-// положение персонажа
-void movie_pers(char *action, int line, int col, char map[line][col], int * x_pers, int * y_pers)
+// рисуем персонажа
+void draw_pers(char *action, int line, int col, char map[line][col], int * x_pers, int * y_pers)
 {
+  char pers = '@'; // внешний вид персонажа
+
   if(*x_pers >= col)
   {
     *x_pers = col - 1;
@@ -72,6 +74,8 @@ void movie_pers(char *action, int line, int col, char map[line][col], int * x_pe
   {
     *x_pers += 1;
   }
+  mvaddch(*y_pers, *x_pers, pers);
+
 }
 
 

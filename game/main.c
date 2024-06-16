@@ -8,14 +8,13 @@ int main(void)
 {
   int x_pers, y_pers; // координаты персонажа
   int line = 15, col = 25; // размер поля
-  char pers = '@'; // вид персонажа
   char map[line][col]; // массив поля
   char action; // действие
 
   // генерация карты
   gen_map(line, col, map);
 
-  // задаем рандомные координаты персонажа
+  // задаем начальные координаты персонажа
   srand(time(NULL));
   x_pers = (rand() % col) + 1;
   y_pers = (rand() % line) + 1;
@@ -27,15 +26,14 @@ int main(void)
 
   while(action != 'q')
   {
-
     // рисуем карту
     draw_map(line, col, map);
-    // положение персонажа в зависимости от action
-    movie_pers(&action, line, col, map, &x_pers, &y_pers);
-    // рисуем персонажа
-    mvaddch(y_pers, x_pers, pers);
-    action = getch(); // нажая кнопка
 
+    // рисуем персонажа
+    draw_pers(&action, line, col, map, &x_pers, &y_pers);
+    mvprintw(0, 30, "x_pers: %2d, y_pers: %2d, action: %c",
+                    x_pers, y_pers, action);
+    action = getch(); // нажая кнопка
   }
   endwin();
 

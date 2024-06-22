@@ -67,7 +67,8 @@ int main(void)
 {
   int i, j, dx = 0;
   int platform_size = 7;
-  int platform_mv = 1;
+  int platform_x = 1;
+  char action;
 
   // id игровых элементов
   int free_space_id = 0;
@@ -77,8 +78,6 @@ int main(void)
 
   // набор символов для отображения игровых элементов
   char draw_list[] = {' ', '#', '%', '*'};
-
-  char action;
 
   // создаем потоки
   pthread_t thread_draw_balls;
@@ -132,17 +131,17 @@ int main(void)
     mvaddch(20, 20, action);
 
     // движение платформы
-    if(platform_mv + dx < 1) dx = 0;
-    else if(platform_mv + dx + platform_size >= MAP_COL - 1) dx = 0;
+    if(platform_x + dx < 1) dx = 0;
+    else if(platform_x + dx + platform_size >= MAP_COL - 1) dx = 0;
 
     // задаем расположение платформы
-    map[MAP_LINE - 2][platform_mv] = free_space_id;
-    platform_mv += dx;
-    for(i = platform_mv; i < platform_mv + platform_size; i++)
+    map[MAP_LINE - 2][platform_x] = free_space_id;
+    platform_x += dx;
+    for(i = platform_x; i < platform_x + platform_size; i++)
     {
       map[MAP_LINE - 2][i] = platform_id;
     }
-    map[MAP_LINE - 2][platform_mv + platform_size] = free_space_id;
+    map[MAP_LINE - 2][platform_x + platform_size] = free_space_id;
 
     // рисуем игровое поле
     for(i = 0; i < MAP_LINE; i++)

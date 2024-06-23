@@ -1,6 +1,6 @@
 /*
  * Знакомлюсь с потоками и структурами
- * https://metanit.com/c/tutorial/11.1.php?ysclid=lxqb7xcqh6523596929
+ * https://metanit.com/c/tutorial/11.1.php
  * https://metanit.com/c/tutorial/6.1.php
  *
  * Пробую написать игрушку наподобии тенниса в тетрисе

@@ -12,13 +12,13 @@
 
 // размер игрового поля
 #define MAP_LINE (20)
-#define MAP_COL (25)
+#define MAP_COL (28)
 
 char map[MAP_LINE][MAP_COL];
 
 struct
 {
-  int x, y, dx, dy;
+  int x, y, dx, dy, run;
 } s_platform, s_balls;
 
 struct
@@ -51,33 +51,43 @@ int msleep(long msec)
     return res;
 }
 
-// движение мяча
+// генерация мяча
 void* fn_draw_balls(void* argc)
 {
+  s_balls.run = 1;
+  s_platform.run = 1;
+  char *action = (char*)argc;
+  // место появления
   s_balls.x = MAP_COL/2, s_balls.y = MAP_COL/2;
   s_balls.dx = 1, s_balls.dy = -1;
-  char *action = (char*)argc;
 
   while(*action != 'q')
   {
     msleep(150); // задержка
-    if(s_balls.x + s_balls.dx >= MAP_COL - 2)
+    // направление
+    if(s_balls.x + s_balls.dx >= MAP_COL - 1)
     {
       s_balls.dx = -1;
     }
-    else if(s_balls.x + s_balls.dx <= 1)
+    else if(s_balls.x + s_balls.dx < 1)
     {
       s_balls.dx = 1;
     }
 
-    if((s_balls.y + s_balls.dy >= MAP_LINE - 1)
-    || (map[s_balls.y + s_balls.dy][s_balls.x + s_balls.dx] == 2))
+    if(s_balls.y + s_balls.dy >= MAP_LINE - 1)
     {
-      s_balls.dy = -1;
+      s_balls.run = 0;
+      s_platform.run = 0;
+      break;
     }
     else if(s_balls.y + s_balls.dy < 1)
     {
       s_balls.dy = 1;
+    }
+    else if(map[s_balls.y + s_balls.dy][s_balls.x] == 2)
+    {
+      s_balls.dx *= 1.2;
+      s_balls.dy = -1;
     }
 
     map[s_balls.y][s_balls.x] = s_id_elems.free_space;
@@ -85,47 +95,49 @@ void* fn_draw_balls(void* argc)
     s_balls.y += s_balls.dy;
     map[s_balls.y][s_balls.x] = s_id_elems.ball;
   }
+  if(s_balls.run == 0)
+  {
+    mvprintw(MAP_LINE + 1, MAP_COL/2 - 5, "%s", "Game Over");
+    mvprintw(MAP_LINE + 2, MAP_COL/2 - 9, "%s", "Press 'q' to exit");
+  }
+
   return 0;
 }
 
-// движение платформы
-void draw_platform()
+// генерация платформы
+int draw_platform()
 {
   int i;
   int platform_size = 7;
 
+  if(s_platform.run == 0) return 0;
+
+  // если уперлись в стену, стоим
   if(s_platform.x + s_platform.dx < 1) s_platform.dx = 0;
-  else if(s_platform.x + s_platform.dx + platform_size >= MAP_COL - 1) s_platform.dx = 0;
+  else if(s_platform.x + s_platform.dx + platform_size >= MAP_COL) s_platform.dx = 0;
+
+  // чистка слева от платформы
+  map[MAP_LINE - 2][s_platform.x] = s_id_elems.free_space;
 
   // задаем расположение платформы
-  map[MAP_LINE - 2][s_platform.x] = s_id_elems.free_space;
   s_platform.x += s_platform.dx;
   for(i = s_platform.x; i < s_platform.x + platform_size; i++)
   {
     map[MAP_LINE - 2][i] = s_id_elems.platform;
   }
-  map[MAP_LINE - 2][s_platform.x + platform_size] = s_id_elems.free_space;
+
+  // чистка справа от платформы
+  if((s_platform.x + platform_size) < MAP_COL - 1)
+  {
+    map[MAP_LINE - 2][s_platform.x + platform_size] = s_id_elems.free_space;
+  }
+  return 0;
 }
 
-int main(void)
+// генерация пустого игрового поля
+int init_map(void)
 {
   int i, j;
-  char action;
-  // набор символов для отображения игровых элементов
-  char draw_list[] = {' ', '#', '%', '*'};
-
-  s_platform.dx = 0;
-  s_platform.x = 1;
-
-  // id игровых элементов
-  s_id_elems.free_space = 0;
-  s_id_elems.border = 1;
-  s_id_elems.platform = 2;
-  s_id_elems.ball = 3;
-
-  pthread_t thread_draw_balls;
-
-  // генерация пустого игрового поля
   for(i = 0; i < MAP_LINE; i++)
   {
     for(j = 0; j < MAP_COL; j++)
@@ -140,8 +152,64 @@ int main(void)
       }
     }
   }
+  return 0;
+}
 
-  // рисование мяча в отдельном потоке
+// направление платформы в зависимости
+// от нажатой кнопки
+int get_direct_p(char *action)
+{
+  if(*action == 'a')
+  {
+    s_platform.dx = -1;
+  }
+  else if(*action == 'd')
+  {
+    s_platform.dx = 1;
+  }
+//  else
+//  {
+//  s_platform.dx = 0;
+//  }
+  return 0;
+}
+
+// рисуем игровое поле
+// сопоставляя id с символами
+int draw_map(void)
+{
+  int i, j;
+  // набор символов для игровых элементов
+  char draw_list[] = {' ', '#', '%', '*', '?', '?'};
+
+  for(i = 0; i < MAP_LINE; i++)
+  {
+    for(j = 0; j < MAP_COL; j++)
+    {
+      mvaddch(i, j, draw_list[map[i][j]]);
+    }
+  }
+  return 0;
+}
+
+int main(void)
+{
+  pthread_t thread_draw_balls;
+
+  char action;
+  // id игровых элементов
+  s_id_elems.free_space = 0;
+  s_id_elems.border = 1;
+  s_id_elems.platform = 2;
+  s_id_elems.ball = 3;
+
+  // начальные координаты платформы
+  s_platform.dx = 0;
+  s_platform.x = 1;
+
+  init_map(); // генерация пустого игрового поля
+
+  // генерация мяча в отдельном потоке
   pthread_create(&thread_draw_balls, NULL, fn_draw_balls, (void *)&action );
 
   // ncurses init
@@ -154,40 +222,12 @@ int main(void)
   while(action != 'q')
   {
     action = getch();
-
-    // задержка
-    msleep(75);
-
-    // нажатие кнопок
-    if(action == 'a')
-    {
-      s_platform.dx = -1;
-    }
-    else if(action == 'd')
-    {
-      s_platform.dx = 1;
-    }
-//    else
-//    {
-//      s_platform.dx = 0;
-//    }
-    mvaddch(20, 20, action);
-
-    // платформа
-    draw_platform();
-
-    // рисуем игровое поле
-    for(i = 0; i < MAP_LINE; i++)
-    {
-      for(j = 0; j < MAP_COL; j++)
-      {
-        mvaddch(i, j, draw_list[map[i][j]]);
-      }
-    }
+    msleep(75); // задержка
+    get_direct_p(&action); // направление платформы
+    draw_platform(); // генерация платформы
+    draw_map(); // рисуем игровое поле
   }
-
-  pthread_cancel(thread_draw_balls);
-
+  pthread_join(thread_draw_balls, NULL);
   nodelay(stdscr, 0);
   endwin();
 

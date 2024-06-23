@@ -102,7 +102,7 @@ void draw_platform()
 
   // задаем расположение платформы
   map[MAP_LINE - 2][s_platform.x] = s_id_elems.free_space;
-  s_platform.x = s_platform.x + s_platform.dx;
+  s_platform.x += s_platform.dx;
   for(i = s_platform.x; i < s_platform.x + platform_size; i++)
   {
     map[MAP_LINE - 2][i] = s_id_elems.platform;

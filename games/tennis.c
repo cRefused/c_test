@@ -26,7 +26,8 @@ struct
   int free_space,
   border,
   platform,
-  ball;
+  ball,
+  brick;
 } s_id_elems;
 
 /*
@@ -51,12 +52,13 @@ int msleep(long msec)
     return res;
 }
 
-// генерация мяча
+// генерация мяча + коллизия
 void* fn_draw_balls(void* argc)
 {
   s_balls.run = 1;
   s_platform.run = 1;
   char *action = (char*)argc;
+
   // место появления
   s_balls.x = MAP_COL/2, s_balls.y = MAP_COL/2;
   s_balls.dx = 1, s_balls.dy = -1;
@@ -64,30 +66,36 @@ void* fn_draw_balls(void* argc)
   while(*action != 'q')
   {
     msleep(150); // задержка
+
     // направление
-    if(s_balls.x + s_balls.dx >= MAP_COL - 1)
+    if(s_balls.x + s_balls.dx >= MAP_COL - 1) // пр. стена
     {
       s_balls.dx = -1;
     }
-    else if(s_balls.x + s_balls.dx < 1)
+    else if(s_balls.x + s_balls.dx <= 1) // лев. стена
     {
       s_balls.dx = 1;
     }
 
-    if(s_balls.y + s_balls.dy >= MAP_LINE - 1)
+    if(s_balls.y + s_balls.dy >= MAP_LINE - 1) // пол (gameover)
     {
       s_balls.run = 0;
       s_platform.run = 0;
       break;
     }
-    else if(s_balls.y + s_balls.dy < 1)
+    else if(s_balls.y + s_balls.dy < 1) // потолок
     {
       s_balls.dy = 1;
     }
-    else if(map[s_balls.y + s_balls.dy][s_balls.x] == 2)
+    else if(map[s_balls.y + s_balls.dy][s_balls.x + s_balls.dx] == s_id_elems.brick) //  кирпич
     {
-      s_balls.dx *= 1.2;
+      map[s_balls.y + s_balls.dy][s_balls.x + s_balls.dx] = s_id_elems.free_space;
+      s_balls.dy = 1;
+    }
+    else if(map[s_balls.y + s_balls.dy][s_balls.x] == 2) // платформа
+    {
       s_balls.dy = -1;
+      s_balls.dx += s_platform.dx;
     }
 
     map[s_balls.y][s_balls.x] = s_id_elems.free_space;
@@ -103,6 +111,19 @@ void* fn_draw_balls(void* argc)
   }
 
   return 0;
+}
+
+// генерация кирпичей
+int init_brick(void)
+{
+  int i, j, line_brick = 3;
+  for(i = 1; i <= line_brick; i++)
+  {
+    for(j = 1; j < MAP_COL - 1; j++)
+    {
+      map[i][j] = s_id_elems.brick;
+    }
+  }
 }
 
 // генерация платформы
@@ -181,7 +202,7 @@ int draw_map(void)
 {
   int i, j;
   // набор символов для игровых элементов
-  char draw_list[] = {' ', '#', '%', '*', '?', '?'};
+  char draw_list[] = {' ', '#', '%', '*', '@', '?'};
 
   for(i = 0; i < MAP_LINE; i++)
   {
@@ -203,12 +224,14 @@ int main(void)
   s_id_elems.border = 1;
   s_id_elems.platform = 2;
   s_id_elems.ball = 3;
+  s_id_elems.brick = 4;
 
   // начальные координаты платформы
   s_platform.dx = 0;
   s_platform.x = 1;
 
   init_map(); // генерация пустого игрового поля
+  init_brick(); // заполняем кирпичами
 
   // мяч в отдельном потоке
   pthread_create(&thread_draw_balls, NULL, fn_draw_balls, (void *)&action );

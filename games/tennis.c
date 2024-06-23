@@ -12,7 +12,7 @@
 
 // размер игрового поля
 #define MAP_LINE (20)
-#define MAP_COL (28)
+#define MAP_COL (24)
 
 char map[MAP_LINE][MAP_COL];
 
@@ -92,7 +92,7 @@ void* fn_draw_balls(void* argc)
       map[s_balls.y + s_balls.dy][s_balls.x + s_balls.dx] = s_id_elems.free_space;
       s_balls.dy = 1;
     }
-    else if(map[s_balls.y + s_balls.dy][s_balls.x] == 2) // платформа
+    else if(map[s_balls.y + s_balls.dy][s_balls.x] == s_id_elems.platform) // платформа
     {
       s_balls.dy = -1;
       s_balls.dx += s_platform.dx;
@@ -189,10 +189,12 @@ int get_direct_p(char *action)
   {
     s_platform.dx = 1;
   }
-//  else
-//  {
-//  s_platform.dx = 0;
-//  }
+  /*
+  else
+  {
+    s_platform.dx = 0;
+  }
+  */
   return 0;
 }
 

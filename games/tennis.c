@@ -112,8 +112,8 @@ int main(void)
   {
     action = getch();
 
-    // скорость отрисовки
-    msleep(25);
+    // задержка
+    msleep(75);
 
     // нажатие кнопок
     if(action == 'a')
@@ -124,10 +124,10 @@ int main(void)
     {
       dx = 1;
     }
-    else
-    {
-      dx = 0;
-    }
+//    else
+//    {
+//      dx = 0;
+//    }
     mvaddch(20, 20, action);
 
     // движение платформы

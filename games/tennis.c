@@ -63,12 +63,32 @@ void* fn_draw_balls(void* arg)
   return 0;
 }
 
+// движение платформы
+void draw_platform(int *free_space_id, int *platform_id, int *dx, int *platform_x)
+{
+  int i;
+  int platform_size = 7;
+
+  if(*platform_x + *dx < 1) *dx = 0;
+  else if(*platform_x + *dx + platform_size >= MAP_COL - 1) *dx = 0;
+
+  // задаем расположение платформы
+  map[MAP_LINE - 2][*platform_x] = *free_space_id;
+  *platform_x += *dx;
+  for(i = *platform_x; i < *platform_x + platform_size; i++)
+  {
+    map[MAP_LINE - 2][i] = *platform_id;
+  }
+  map[MAP_LINE - 2][*platform_x + platform_size] = *free_space_id;
+}
+
 int main(void)
 {
-  int i, j, dx = 0;
-  int platform_size = 7;
-  int platform_x = 1;
+  int i, j, dx = 0, platform_x = 1;
+
   char action;
+  // набор символов для отображения игровых элементов
+  char draw_list[] = {' ', '#', '%', '*'};
 
   // id игровых элементов
   int free_space_id = 0;
@@ -76,10 +96,6 @@ int main(void)
   int platform_id = 2;
   int ball_id = 3;
 
-  // набор символов для отображения игровых элементов
-  char draw_list[] = {' ', '#', '%', '*'};
-
-  // создаем потоки
   pthread_t thread_draw_balls;
 
   // генерация пустого игрового поля
@@ -130,18 +146,8 @@ int main(void)
 //    }
     mvaddch(20, 20, action);
 
-    // движение платформы
-    if(platform_x + dx < 1) dx = 0;
-    else if(platform_x + dx + platform_size >= MAP_COL - 1) dx = 0;
-
-    // задаем расположение платформы
-    map[MAP_LINE - 2][platform_x] = free_space_id;
-    platform_x += dx;
-    for(i = platform_x; i < platform_x + platform_size; i++)
-    {
-      map[MAP_LINE - 2][i] = platform_id;
-    }
-    map[MAP_LINE - 2][platform_x + platform_size] = free_space_id;
+    // платформа
+    draw_platform(&free_space_id, &platform_id, &dx, &platform_x);
 
     // рисуем игровое поле
     for(i = 0; i < MAP_LINE; i++)

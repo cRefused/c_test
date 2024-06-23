@@ -95,6 +95,7 @@ void* fn_draw_balls(void* argc)
     s_balls.y += s_balls.dy;
     map[s_balls.y][s_balls.x] = s_id_elems.ball;
   }
+
   if(s_balls.run == 0)
   {
     mvprintw(MAP_LINE + 1, MAP_COL/2 - 5, "%s", "Game Over");
@@ -209,7 +210,7 @@ int main(void)
 
   init_map(); // генерация пустого игрового поля
 
-  // генерация мяча в отдельном потоке
+  // мяч в отдельном потоке
   pthread_create(&thread_draw_balls, NULL, fn_draw_balls, (void *)&action );
 
   // ncurses init

@@ -6,9 +6,6 @@
  * Пробую написать игрушку наподобии тенниса в тетрисе
 */
 
-#include <time.h>
-#include <string.h>
-#include <stdio.h>
 #include <ncurses.h>
 #include <errno.h>
 #include <pthread.h>

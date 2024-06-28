@@ -104,22 +104,16 @@ void* fn_draw_balls(void* argc)
     map[s_balls.y][s_balls.x] = s_id_elems.ball;
   }
 
-  if(s_balls.run == 0)
-  {
-    mvprintw(MAP_LINE + 1, MAP_COL/2 - 5, "%s", "Game Over");
-    mvprintw(MAP_LINE + 2, MAP_COL/2 - 9, "%s", "Press 'q' to exit");
-  }
-
   return 0;
 }
 
 // генерация кирпичей
 int init_brick(void)
 {
-  int i, j, line_brick = 3;
-  for(i = 1; i <= line_brick; i++)
+  int line_brick = 3;
+  for(int i = 1; i <= line_brick; i++)
   {
-    for(j = 1; j < MAP_COL - 1; j++)
+    for(int j = 1; j < MAP_COL - 1; j++)
     {
       map[i][j] = s_id_elems.brick;
     }
@@ -129,7 +123,6 @@ int init_brick(void)
 // генерация платформы
 int draw_platform()
 {
-  int i;
   int platform_size = 7;
 
   if(s_platform.run == 0) return 0;
@@ -143,7 +136,7 @@ int draw_platform()
 
   // задаем расположение платформы
   s_platform.x += s_platform.dx;
-  for(i = s_platform.x; i < s_platform.x + platform_size; i++)
+  for(int i = s_platform.x; i < s_platform.x + platform_size; i++)
   {
     map[MAP_LINE - 2][i] = s_id_elems.platform;
   }
@@ -159,10 +152,9 @@ int draw_platform()
 // генерация пустого игрового поля
 int init_map(void)
 {
-  int i, j;
-  for(i = 0; i < MAP_LINE; i++)
+  for(int i = 0; i < MAP_LINE; i++)
   {
-    for(j = 0; j < MAP_COL; j++)
+    for(int j = 0; j < MAP_COL; j++)
     {
       if((i == 0 || i == MAP_LINE - 1) || (j == 0 || j == MAP_COL - 1))
       {
@@ -202,17 +194,24 @@ int get_direct_p(char *action)
 // сопоставляя id с символами
 int draw_map(void)
 {
-  int i, j;
   // набор символов для игровых элементов
   char draw_list[] = {' ', '#', '%', '*', '@', '?'};
 
-  for(i = 0; i < MAP_LINE; i++)
+  for(int i = 0; i < MAP_LINE; i++)
   {
-    for(j = 0; j < MAP_COL; j++)
+    for(int j = 0; j < MAP_COL; j++)
     {
       mvaddch(i, j, draw_list[map[i][j]]);
     }
   }
+  mvprintw(MAP_LINE, MAP_COL/2 - 11, "%s", "Press 'a', 'd' to move");
+  mvprintw(MAP_LINE + 1, MAP_COL/2 - 9, "%s", "Press 'q' to exit");
+
+  if(s_balls.run == 0)
+  {
+    mvprintw(MAP_LINE/2, MAP_COL/2 - 5, "%s", "Game Over");
+  }
+
   return 0;
 }
 

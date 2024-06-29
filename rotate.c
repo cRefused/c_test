@@ -1,5 +1,5 @@
 /*
- * Пробую поворачивание фигур
+ * Пробую поворачивать фигуры
 */
 
 #include <stdio.h>
@@ -16,28 +16,6 @@ struct
 {
   char arr[ROW][COL];
 } figures[NUM_FIGURES];
-
-// выводим поворачивание фигур
-int rotate()
-{
-  char rotate_f[ROW][COL];
-  srand(time(NULL));
-  int f = rand() % (NUM_FIGURES - 1);
-
-  for(int i  = 0; i < ROW; i++)
-  {
-    for(int j = 0; j < COL; j++)
-    {
-      int ii = ROW - j - 1;
-      int jj = i;
-      rotate_f[i][j] = figures[f].arr[ii][jj];
-      printf("%c", rotate_f[i][j]);
-    }
-    printf("\n");
-  }
-  memcpy(figures[f].arr, rotate_f, sizeof(figures[f].arr));
-  return 0;
-}
 
 // заполняем фигуры шаблоном
 int init_figures(void)
@@ -74,7 +52,6 @@ int init_figures(void)
       {' ','#',' ',' '},
       {' ','#',' ',' '},
     },
-
   };
 
   for(int i = 0; i < NUM_FIGURES; i++)
@@ -83,10 +60,32 @@ int init_figures(void)
   }
 }
 
+// выводим поворачивание фигур
+int rotate()
+{
+  char rotate_f[ROW][COL];
+  srand(time(NULL));
+  int f = rand() % (NUM_FIGURES - 1);
+
+  for(int i  = 0; i < ROW; i++)
+  {
+    for(int j = 0; j < COL; j++)
+    {
+      int ii = ROW - j - 1;
+      int jj = i;
+      rotate_f[i][j] = figures[f].arr[ii][jj];
+      printf("%c", rotate_f[i][j]);
+    }
+    printf("\n");
+  }
+  memcpy(figures[f].arr, rotate_f, sizeof(figures[f].arr));
+  return 0;
+}
+
 int main(void)
 {
   init_figures();
-  for(int i = 0; i < 4; i++)
+  for(int i = 0; i <= 4; i++)
   {
     rotate();
   }

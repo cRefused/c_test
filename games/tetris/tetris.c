@@ -9,8 +9,8 @@
 #include <errno.h>
 
 // параметры фигур
-#define ROW_BRICK 4
-#define COL_BRICK 4
+#define BRICK_ROW 4
+#define BRICK_COL 4
 #define NUM_FIGURES 5
 
 // параметры поля
@@ -31,7 +31,7 @@ struct
 struct
 {
   int x, y;
-  int arr[ROW_BRICK][COL_BRICK];
+  int arr[BRICK_ROW][BRICK_COL];
 } figures[NUM_FIGURES];
 
 /*
@@ -64,7 +64,7 @@ int msleep(long msec)
 // заполняем фигуры шаблоном
 int init_figures(void)
 {
-  int tmp[NUM_FIGURES][ROW_BRICK][COL_BRICK] =
+  int tmp[NUM_FIGURES][BRICK_ROW][BRICK_COL] =
   {
     {
       {0,0,0,0},
@@ -100,6 +100,8 @@ int init_figures(void)
 
   for(int i = 0; i < NUM_FIGURES; i++)
   {
+    figures[i].x = MAP_COL/2 - BRICK_COL/2;
+    figures[i].y = 1;
     memcpy(figures[i].arr, tmp[i], sizeof(figures[i].arr));
   }
 }
@@ -107,13 +109,13 @@ int init_figures(void)
 // поворачивание фигур
 int rotate(int num_brick)
 {
-  int rotate_f[ROW_BRICK][COL_BRICK] = {0};
+  int rotate_f[BRICK_ROW][BRICK_COL] = {0};
 
-  for(int i  = 0; i < ROW_BRICK; i++)
+  for(int i  = 0; i < BRICK_ROW; i++)
   {
-    for(int j = 0; j < COL_BRICK; j++)
+    for(int j = 0; j < BRICK_COL; j++)
     {
-      int ii = ROW_BRICK - j - 1;
+      int ii = BRICK_ROW - j - 1;
       int jj = i;
       rotate_f[i][j] = figures[num_brick].arr[ii][jj];
     }
@@ -126,18 +128,15 @@ int rotate(int num_brick)
 // наносим фигуру на поле
 int brick_to_map(int num_brick)
 {
-  figures[num_brick].x = 5;
-  figures[num_brick].y = 5;
-
   for(int i = 0; i < MAP_LINE; i++)
   {
     for(int j = 0; j < MAP_COL; j++)
     {
       if(i == figures[num_brick].y && j == figures[num_brick].x )
       {
-        for(int bi = 0; bi < ROW_BRICK; bi++)
+        for(int bi = 0; bi < BRICK_ROW; bi++)
         {
-          for(int bj = 0; bj < COL_BRICK; bj++)
+          for(int bj = 0; bj < BRICK_COL; bj++)
           {
             map[i+bi][j+bj] = figures[num_brick].arr[bi][bj];
           }
@@ -219,9 +218,9 @@ int main(void)
     switch(getch())
     {
       case KEY_UP: rotate(f); break;
-      case KEY_DOWN: rotate(f); break;
-      case KEY_LEFT: rotate(f); break;
-      case KEY_RIGHT: rotate(f); break;
+      case KEY_DOWN: figures[f].y += 1; break;
+      case KEY_LEFT: figures[f].x -= 1; break;
+      case KEY_RIGHT: figures[f].x += 1; break;
       case 'q': action = 'q';
     }
 

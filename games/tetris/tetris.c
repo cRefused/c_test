@@ -128,24 +128,19 @@ int rotate(int num_brick)
 // наносим фигуру на поле
 int brick_to_map(int num_brick)
 {
-  if(map[figures[num_brick].y + BRICK_ROW][figures[num_brick].x] == 1)
+  int run = 1;
+  for(int by = BRICK_ROW-1; by >= 0 ; by--)
   {
-    figures[num_brick].y = 1;
-  }
-
-  for(int i = 0; i < MAP_LINE; i++)
-  {
-    for(int j = 0; j < MAP_COL; j++)
+    for(int bx = BRICK_COL-1; bx >= 0 ; bx--)
     {
-      if(i == figures[num_brick].y && j == figures[num_brick].x )
+      if(figures[num_brick].y+by < MAP_LINE-1 &&
+      figures[num_brick].x+bx < MAP_COL -1 && run == 1)
       {
-        for(int bi = 0; bi < BRICK_ROW; bi++)
-        {
-          for(int bj = 0; bj < BRICK_COL; bj++)
-          {
-            map[i+bi][j+bj] = figures[num_brick].arr[bi][bj];
-          }
-        }
+        map[figures[num_brick].y+by][figures[num_brick].x+bx] = figures[num_brick].arr[by][bx];
+      }
+      else
+      {
+        run = 0;
       }
     }
   }

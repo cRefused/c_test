@@ -7,20 +7,20 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define ROW 4
-#define COL 4
+#define ROW_BRICK 4
+#define COL_BRICK 4
 #define NUM_FIGURES 5
 
 // фигуры
 struct
 {
-  char arr[ROW][COL];
+  char arr[ROW_BRICK][COL_BRICK];
 } figures[NUM_FIGURES];
 
 // заполняем фигуры шаблоном
 int init_figures(void)
 {
-  char tmp[NUM_FIGURES][ROW][COL] =
+  char tmp[NUM_FIGURES][ROW_BRICK][COL_BRICK] =
   {
     {
       {' ',' ',' ',' '},
@@ -63,15 +63,15 @@ int init_figures(void)
 // выводим поворачивание фигур
 int rotate()
 {
-  char rotate_f[ROW][COL];
+  char rotate_f[ROW_BRICK][COL_BRICK];
   srand(time(NULL));
   int f = rand() % (NUM_FIGURES - 1);
 
-  for(int i  = 0; i < ROW; i++)
+  for(int i  = 0; i < ROW_BRICK; i++)
   {
-    for(int j = 0; j < COL; j++)
+    for(int j = 0; j < COL_BRICK; j++)
     {
-      int ii = ROW - j - 1;
+      int ii = ROW_BRICK - j - 1;
       int jj = i;
       rotate_f[i][j] = figures[f].arr[ii][jj];
       printf("%c", rotate_f[i][j]);

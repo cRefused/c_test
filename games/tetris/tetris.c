@@ -1,5 +1,5 @@
 /*
- * Не готовая фигня
+ * Пилю тетрис
 */
 
 #include <time.h>
@@ -8,16 +8,18 @@
 #include <ncurses.h>
 #include <errno.h>
 
-
+// параметры фигур
 #define ROW_BRICK 4
 #define COL_BRICK 4
 #define NUM_FIGURES 5
 
+// параметры поля
 #define MAP_LINE (24)
 #define MAP_COL (20)
 
 char map[MAP_LINE][MAP_COL];
 
+// id игровых элементов
 struct
 {
   int free_space,
@@ -32,8 +34,33 @@ struct
   int arr[ROW_BRICK][COL_BRICK];
 } figures[NUM_FIGURES];
 
-//--------------------------------
+/*
+ * msleep(): Sleep for the requested number of milliseconds.
+ * https://stackoverflow.com/questions/1157209/is-there-an-alternative-sleep-function-in-c-to-milliseconds
+ *
+*/
+int msleep(long msec)
+{
+    struct timespec ts;
+    int res;
+    if (msec < 0)
+    {
+      errno = EINVAL;
+      return -1;
+    }
+    ts.tv_sec = msec / 1000;
+    ts.tv_nsec = (msec % 1000) * 1000000;
+    do {
+      res = nanosleep(&ts, &ts);
+    } while (res && errno == EINTR);
+    return res;
+}
 
+
+/* --------------------------------
+ * вынести в отдельный файл
+ * --------------------------------
+*/
 // заполняем фигуры шаблоном
 int init_figures(void)
 {
@@ -80,7 +107,7 @@ int init_figures(void)
 // поворачивание фигур
 int rotate(int num_brick)
 {
-  char rotate_f[ROW_BRICK][COL_BRICK] = {0};
+  int rotate_f[ROW_BRICK][COL_BRICK] = {0};
 
   for(int i  = 0; i < ROW_BRICK; i++)
   {
@@ -91,10 +118,12 @@ int rotate(int num_brick)
       rotate_f[i][j] = figures[num_brick].arr[ii][jj];
     }
   }
+
   memcpy(figures[num_brick].arr, rotate_f, sizeof(figures[num_brick].arr));
   return 0;
 }
 
+// наносим фигуру на поле
 int brick_to_map(int num_brick)
 {
   figures[num_brick].x = 5;
@@ -119,28 +148,6 @@ int brick_to_map(int num_brick)
   return 0;
 }
 //--------------------------------
-
-/*
- * msleep(): Sleep for the requested number of milliseconds.
- * https://stackoverflow.com/questions/1157209/is-there-an-alternative-sleep-function-in-c-to-milliseconds
- *
-*/
-int msleep(long msec)
-{
-    struct timespec ts;
-    int res;
-    if (msec < 0)
-    {
-      errno = EINVAL;
-      return -1;
-    }
-    ts.tv_sec = msec / 1000;
-    ts.tv_nsec = (msec % 1000) * 1000000;
-    do {
-      res = nanosleep(&ts, &ts);
-    } while (res && errno == EINTR);
-    return res;
-}
 
 // генерация пустого игрового поля
 int init_map(void)
@@ -182,11 +189,11 @@ int draw_map(void)
   return 0;
 }
 
-
 int main(void)
 {
   srand(time(NULL));
   int f;
+  f = rand() % (NUM_FIGURES - 1);
 
   char action;
   // вид игровых элементов
@@ -201,17 +208,25 @@ int main(void)
   initscr();
   noecho();
   curs_set(0);
-//  keypad(stdscr, 1);
+  keypad(stdscr, 1);
   nodelay(stdscr, 1);
 
   while(action != 'q')
   {
-    action = getch();
-    f = rand() % (NUM_FIGURES - 1);
+    //action = getch();
 
-    msleep(150); // задержка
+    // слушаем нажатие клавиш
+    switch(getch())
+    {
+      case KEY_UP: rotate(f); break;
+      case KEY_DOWN: rotate(f); break;
+      case KEY_LEFT: rotate(f); break;
+      case KEY_RIGHT: rotate(f); break;
+      case 'q': action = 'q';
+    }
+
+    msleep(100); // задержка
     init_map();
-    //rotate(f);
     brick_to_map(f);
     draw_map(); // рисуем игровое поле
   }

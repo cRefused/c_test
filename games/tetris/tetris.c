@@ -128,6 +128,11 @@ int rotate(int num_brick)
 // наносим фигуру на поле
 int brick_to_map(int num_brick)
 {
+  if(map[figures[num_brick].y + BRICK_ROW][figures[num_brick].x] == 1)
+  {
+    figures[num_brick].y = 1;
+  }
+
   for(int i = 0; i < MAP_LINE; i++)
   {
     for(int j = 0; j < MAP_COL; j++)

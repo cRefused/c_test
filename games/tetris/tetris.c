@@ -1,38 +1,36 @@
 /*
- * Пилю тетрис
+ * Tetris
 */
 
-#include <time.h>
-#include <string.h>
 #include <stdlib.h>
-#include <ncurses.h>
+#include <string.h>
 #include <errno.h>
+#include <time.h>
+#include <ncurses.h>
 
-// параметры фигур
-#define BRICK_ROW 4
-#define BRICK_COL 4
-#define NUM_FIGURES 5
-
-// параметры поля
-#define MAP_LINE (24)
-#define MAP_COL (20)
-
-char map[MAP_LINE][MAP_COL];
-
-// id игровых элементов
-struct
+// figures
+typedef struct
 {
-  int free_space,
-  border,
-  brick;
-} s_id_elems;
+  int x;
+  int y;
+  int **arr;
+  int size;
+} s_figures;
 
-// фигуры
-struct
-{
-  int x, y;
-  int arr[BRICK_ROW][BRICK_COL];
-} figures[NUM_FIGURES];
+const s_figures figures[] = {
+{1, 1, (int* []){(int []){2,2},(int []){2,2}}, 2},      // SQ
+{1, 1, (int* []){(int []){0,2,0},(int []){2,2,2},(int []){0,0,0}}, 3},  // T
+{1, 1, (int* []){(int []){0,2,2},(int []){2,2,0},(int []){0,0,0}}, 3},  // S
+{1, 1, (int* []){(int []){2,2,0},(int []){0,2,2},(int []){0,0,0}}, 3},  // Z
+{1, 1, (int* []){(int []){2,0,0},(int []){2,2,2},(int []){0,0,0}}, 3},  // ML
+{1, 1, (int* []){(int []){0,0,2},(int []){2,2,2},(int []){0,0,0}}, 3},  // L
+{1, 1, (int* []){(int []){2,2,2,2},(int []){0,0,0,0},(int []){0,0,0,0},(int []){0,0,0,0}}, 4},  // I
+};
+
+s_figures tmp_figure, cur_figure;
+
+// index to symbol
+char arr_symbols[] = {' ', '#', 'O'};
 
 /*
  * msleep(): Sleep for the requested number of milliseconds.
@@ -56,179 +54,82 @@ int msleep(long msec)
     return res;
 }
 
-
-/* --------------------------------
- * вынести в отдельный файл
- * --------------------------------
-*/
-// заполняем фигуры шаблоном
-int init_figures(void)
+int get_figure(int f, s_figures* figure)
 {
-  int tmp[NUM_FIGURES][BRICK_ROW][BRICK_COL] =
+  // freeing memory from old figure
+  for(int i = 0; i < figure->size; i++)
   {
-    {
-      {0,0,0,0},
-      {0,1,0,0},
-      {0,1,1,1},
-      {0,0,0,0},
-    },
-    {
-      {0,0,0,0},
-      {0,0,1,0},
-      {0,1,1,1},
-      {0,0,0,0},
-    },
-    {
-      {0,1,0,0},
-      {0,1,0,0},
-      {0,1,0,0},
-      {0,1,0,0},
-    },
-    {
-      {0,1,0,0},
-      {0,1,0,0},
-      {0,0,1,0},
-      {0,0,1,0},
-    },
-    {
-      {0,0,1,0},
-      {0,0,1,0},
-      {0,1,0,0},
-      {0,1,0,0},
-    },
-  };
-
-  for(int i = 0; i < NUM_FIGURES; i++)
-  {
-    figures[i].x = MAP_COL/2 - BRICK_COL/2;
-    figures[i].y = 1;
-    memcpy(figures[i].arr, tmp[i], sizeof(figures[i].arr));
+    free(figure->arr[i]);
   }
-}
+  free(figure->arr);
 
-// поворачивание фигур
-int rotate(int num_brick)
-{
-  int rotate_f[BRICK_ROW][BRICK_COL] = {0};
+  // create new figure
+  figure->x = 2;
+  figure->y = 2;
+  figure->size = figures[f].size;
+  figure->arr = (int**)malloc(figure->size * sizeof(int*));
 
-  for(int i  = 0; i < BRICK_ROW; i++)
+  for(int i = 0; i < figure->size; i++)
   {
-    for(int j = 0; j < BRICK_COL; j++)
-    {
-      int ii = BRICK_ROW - j - 1;
-      int jj = i;
-      rotate_f[i][j] = figures[num_brick].arr[ii][jj];
-    }
+    figure->arr[i] = (int*)malloc(figure->size * sizeof(int));
+    memcpy(figure->arr[i],  figures[f].arr[i], figure->size * sizeof(int));
   }
 
-  memcpy(figures[num_brick].arr, rotate_f, sizeof(figures[num_brick].arr));
   return 0;
 }
 
-// наносим фигуру на поле
-int brick_to_map(int num_brick)
+// draw figure
+int draw_figure(s_figures* figure, int pos)
 {
-  int run = 1;
-  for(int by = BRICK_ROW-1; by >= 0 ; by--)
+  for(int i = 0; i <= 5; i++)
   {
-    for(int bx = BRICK_COL-1; bx >= 0 ; bx--)
+    mvprintw(i, pos, "%5c", ' ');
+  }
+  for(int i = 0; i < figure->size; i++)
+  {
+    for(int j = 0; j < figure->size; j++)
     {
-      if(figures[num_brick].y+by < MAP_LINE-1 &&
-      figures[num_brick].x+bx < MAP_COL -1 && run == 1)
-      {
-        map[figures[num_brick].y+by][figures[num_brick].x+bx] = figures[num_brick].arr[by][bx];
-      }
-      else
-      {
-        run = 0;
-      }
+      mvaddch(i, j+pos, arr_symbols[figure->arr[i][j]]);
     }
   }
-  return 0;
-}
-//--------------------------------
-
-// генерация пустого игрового поля
-int init_map(void)
-{
-  for(int i = 0; i < MAP_LINE; i++)
-  {
-    for(int j = 0; j < MAP_COL; j++)
-    {
-      if((i == 0 || i == MAP_LINE - 1) || (j == 0 || j == MAP_COL - 1))
-      {
-        map[i][j] = s_id_elems.border;
-      }
-      else
-      {
-        map[i][j] = s_id_elems.free_space;
-      }
-    }
-  }
-  return 0;
-}
-
-// рисуем игровое поле
-// сопоставляя id с символами
-int draw_map(void)
-{
-  // набор символов для игровых элементов
-  char draw_list[] = {' ', '#', '?'};
-
-  for(int i = 0; i < MAP_LINE; i++)
-  {
-    for(int j = 0; j < MAP_COL; j++)
-    {
-      mvaddch(i, j, draw_list[map[i][j]]);
-    }
-  }
-  mvprintw(MAP_LINE, MAP_COL/2 - 11, "%s", "Press 'a', 'd' to move");
-  mvprintw(MAP_LINE + 1, MAP_COL/2 - 9, "%s", "Press 'q' to exit");
-
   return 0;
 }
 
 int main(void)
 {
   srand(time(NULL));
-  int f;
-  f = rand() % (NUM_FIGURES - 1);
-
+  int f, f_tmp, num_figures, dx = 0, dy = 0;
+  num_figures = sizeof(figures) / sizeof(figures[0]);
+  f = rand() % (num_figures);
   char action;
-  // вид игровых элементов
-  s_id_elems.free_space = 0;
-  s_id_elems.border = 1;
-  s_id_elems.brick = 1;
-
-  init_map(); // генерация пустого игрового поля
-  init_figures(); // заполняем фигуры
 
   // ncurses init
   initscr();
   noecho();
   curs_set(0);
   keypad(stdscr, 1);
-  nodelay(stdscr, 1);
+  halfdelay(1);
 
   while(action != 'q')
   {
-    //action = getch();
-
-    // слушаем нажатие клавиш
-    switch(getch())
+    action = getch();
+    if(action != 'a')
     {
-      case KEY_UP: rotate(f); break;
-      case KEY_DOWN: figures[f].y += 1; break;
-      case KEY_LEFT: figures[f].x -= 1; break;
-      case KEY_RIGHT: figures[f].x += 1; break;
-      case 'q': action = 'q';
-    }
+      f_tmp = rand() % (num_figures);
 
-    msleep(100); // задержка
-    init_map();
-    brick_to_map(f);
-    draw_map(); // рисуем игровое поле
+      get_figure(f_tmp, &tmp_figure);
+      get_figure(f, &cur_figure);
+
+      mvprintw(0, 1, "%2d", f);
+      f = f_tmp;
+      mvprintw(1, 1, "%2d", f);
+
+      draw_figure(&cur_figure, 5);
+      draw_figure(&tmp_figure, 10);
+    }
+    msleep(250);
   }
+
   nodelay(stdscr, 0);
   endwin();
 

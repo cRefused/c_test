@@ -242,12 +242,12 @@ int main(void)
   noecho();
   curs_set(0);
 //  keypad(stdscr, 1);
-  nodelay(stdscr, 1);
+  halfdelay(1);
 
   while(action != 'q')
   {
     action = getch();
-    msleep(75); // задержка
+    msleep(25); // задержка
     get_direct_p(&action); // направление платформы
     draw_platform(); // генерация платформы
     draw_map(); // рисуем игровое поле

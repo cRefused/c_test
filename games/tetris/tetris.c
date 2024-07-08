@@ -8,6 +8,11 @@
 #include <time.h>
 #include <ncurses.h>
 
+#define MAP_LINE 28
+#define MAP_COL 28
+
+int game_map[MAP_LINE][MAP_COL] = {0};
+
 // figures
 typedef struct
 {
@@ -64,8 +69,8 @@ int get_figure(int f, s_figures* figure)
   free(figure->arr);
 
   // create new figure
-  figure->x = 2;
-  figure->y = 2;
+  figure->x = rand() % (MAP_COL - figures[f].size - 2) + 1;
+  figure->y = 1;
   figure->size = figures[f].size;
   figure->arr = (int**)malloc(figure->size * sizeof(int*));
 
@@ -79,19 +84,67 @@ int get_figure(int f, s_figures* figure)
 }
 
 // draw figure
-int draw_figure(s_figures* figure, int pos)
+int draw_figure(s_figures* figure, int tmp)
 {
-  for(int i = 0; i <= 5; i++)
+  int x, y;
+  if(tmp == 1)
   {
-    mvprintw(i, pos, "%5c", ' ');
+    y = 1;
+    x = MAP_COL + 2;
+    for(int i = 0; i < 5; i++)
+    {
+      for(int j = 0; j < 5; j++)
+      {
+        mvaddch(y+i, x+j, arr_symbols[0]);
+      }      
+    }
   }
+  else
+  {
+    y = figure->y;
+    x = figure->x;
+  }
+
   for(int i = 0; i < figure->size; i++)
   {
     for(int j = 0; j < figure->size; j++)
     {
-      mvaddch(i, j+pos, arr_symbols[figure->arr[i][j]]);
+      mvaddch(y+i, x+j, arr_symbols[figure->arr[i][j]]);
     }
   }
+  return 0;
+}
+
+int draw_map()
+{
+  for(int y = 0; y < MAP_LINE; y++)
+  {
+    for(int x = 0; x < MAP_COL; x++)
+    {
+      if(x == 0 || x == MAP_COL -1 ||
+      y == 0 || y == MAP_LINE - 1)
+      {
+        mvaddch(y, x, arr_symbols[1]);
+      }
+      else
+      {
+        mvaddch(y, x, arr_symbols[game_map[y][x]]);
+      }
+    }
+  }
+
+  return 0;
+}
+
+int figure_new_iteration(int* f, int* f_tmp, int* num_figures)
+{
+  *f_tmp = rand() % (*num_figures);
+
+  get_figure(*f_tmp, &tmp_figure);
+  get_figure(*f, &cur_figure);
+
+  *f = *f_tmp;
+
   return 0;
 }
 
@@ -110,24 +163,19 @@ int main(void)
   keypad(stdscr, 1);
   halfdelay(1);
 
+  figure_new_iteration(&f, &f_tmp, &num_figures);
+
   while(action != 'q')
   {
     action = getch();
-    if(action != 'a')
+    if(action == 'n')
     {
-      f_tmp = rand() % (num_figures);
-
-      get_figure(f_tmp, &tmp_figure);
-      get_figure(f, &cur_figure);
-
-      mvprintw(0, 1, "%2d", f);
-      f = f_tmp;
-      mvprintw(1, 1, "%2d", f);
-
-      draw_figure(&cur_figure, 5);
-      draw_figure(&tmp_figure, 10);
+      figure_new_iteration(&f, &f_tmp, &num_figures);
     }
-    msleep(250);
+    draw_map();
+    draw_figure(&cur_figure, 0);
+    draw_figure(&tmp_figure, 1);
+    msleep(50);
   }
 
   nodelay(stdscr, 0);

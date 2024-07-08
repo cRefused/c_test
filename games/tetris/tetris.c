@@ -59,18 +59,19 @@ int msleep(long msec)
     return res;
 }
 
+// генерация новой фигуры
 int get_figure(int f, s_figures* figure)
 {
-  // freeing memory from old figure
+  // освобождение памяти от предыдущей фигуры
   for(int i = 0; i < figure->size; i++)
   {
     free(figure->arr[i]);
   }
   free(figure->arr);
 
-  // create new figure
-  figure->x = rand() % (MAP_COL - figures[f].size - 2) + 1;
-  figure->y = 1;
+  // создание новой фигуры
+  figure->x = rand() % (MAP_COL - figures[f].size - 1) + 1;
+  figure->y = 0;
   figure->size = figures[f].size;
   figure->arr = (int**)malloc(figure->size * sizeof(int*));
 
@@ -83,14 +84,87 @@ int get_figure(int f, s_figures* figure)
   return 0;
 }
 
-// draw figure
+// наносим врезавшуюся фигуру на массив карты
+int figure_to_map(s_figures* figure)
+{
+  int x = figure->x, y = figure->y; // коорд. фигуры
+  int mx, my; // индекс массива карты
+  int fx, fy; // индекс массива фигуры
+  
+  for(int i = (y + figure->size - 1); i >= y; i--)
+  {
+    fy = i - y;
+
+    // проверка выхода за границы массива карты по Y
+    if(i > MAP_LINE - 1)
+    {
+      my = MAP_LINE - 1;
+    }
+    else
+    {
+      my = i;
+    }
+
+    for(int j = (x + figure->size - 1); j >= x; j--)
+    {
+      fx = j - x;
+      
+      if(figure->arr[fy][fx] != 0)
+      {
+        game_map[my][j] = figure->arr[fy][fx];
+      }
+    }
+  }
+  return 0;
+}
+
+// проверка коллизии
+int check_collizion(s_figures* figure, int* y, int* x, int* ni)
+{
+  int mx, my; // индекс массива карты
+  int fx, fy; // индекс массива фигуры
+  for(int i = (*y + figure->size - 1); i >= *y; i--)
+  {
+    fy = i - *y;
+
+    // проверка выхода за границы массива карты по Y
+    if(i > MAP_LINE - 1)
+    {
+      my = MAP_LINE - 1;
+    }
+    else
+    {
+      my = i;
+    }
+
+    for(int j = (*x + figure->size) - 1; j >= *x; j--)
+    {
+      fx = j - *x;
+      
+      if(game_map[my + 1][j] + figure->arr[fy][fx] > 2)
+      {
+        *ni = 1;
+        figure_to_map(figure);
+      }
+    }
+  }
+  return *ni;
+}
+
+// рисование фигуры
 int draw_figure(s_figures* figure, int tmp)
 {
-  int x, y;
-  if(tmp == 1)
+  int x, y; // коорд. фигуры
+  int dy; // дельта фигуры
+  int mx, my; // индекс массива карты
+  int fx, fy; // индекс массива фигуры
+  int ni = 0;
+
+  if(tmp == 1) // у временной фигуры положение в предпросмотре
   {
     y = 1;
     x = MAP_COL + 2;
+
     for(int i = 0; i < 5; i++)
     {
       for(int j = 0; j < 5; j++)
@@ -99,22 +173,29 @@ int draw_figure(s_figures* figure, int tmp)
       }      
     }
   }
-  else
+  else // у текущей динамическое положение
   {
+    dy = 1;
+    figure->y += dy;
     y = figure->y;
     x = figure->x;
+
+    // проверка коллизии
+    check_collizion(figure, &y, &x, &ni);
   }
 
   for(int i = 0; i < figure->size; i++)
   {
     for(int j = 0; j < figure->size; j++)
     {
+      if(figure->arr[i][j] == 0) continue;
       mvaddch(y+i, x+j, arr_symbols[figure->arr[i][j]]);
     }
   }
-  return 0;
+  return ni;
 }
 
+// рисование карты
 int draw_map()
 {
   for(int y = 0; y < MAP_LINE; y++)
@@ -124,18 +205,31 @@ int draw_map()
       if(x == 0 || x == MAP_COL -1 ||
       y == 0 || y == MAP_LINE - 1)
       {
-        mvaddch(y, x, arr_symbols[1]);
+        game_map[y][x] = 1;
       }
-      else
-      {
-        mvaddch(y, x, arr_symbols[game_map[y][x]]);
-      }
+      mvaddch(y, x, arr_symbols[game_map[y][x]]);
     }
   }
 
   return 0;
 }
 
+// проверка геймовера
+int check_gameover()
+{
+  int y = 1;
+  for(int x = 0; x < MAP_COL; x++)
+  {
+    if(game_map[y][x] > 1)
+    {
+      return 1;
+    }
+
+  }
+  return 0;
+}
+
+// новая итерация фигуры
 int figure_new_iteration(int* f, int* f_tmp, int* num_figures)
 {
   *f_tmp = rand() % (*num_figures);
@@ -167,15 +261,19 @@ int main(void)
 
   while(action != 'q')
   {
+    msleep(50);
     action = getch();
-    if(action == 'n')
+    if(check_gameover() == 1)
+    {
+      mvprintw(MAP_LINE + 1, 0, "GAME OVER");
+      continue;
+    }
+    draw_map();
+    if(draw_figure(&cur_figure, 0) == 1)
     {
       figure_new_iteration(&f, &f_tmp, &num_figures);
     }
-    draw_map();
-    draw_figure(&cur_figure, 0);
     draw_figure(&tmp_figure, 1);
-    msleep(50);
   }
 
   nodelay(stdscr, 0);

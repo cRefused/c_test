@@ -13,28 +13,28 @@
 
 int game_map[MAP_LINE][MAP_COL] = {0};
 
-// figures
+// фигуры
 typedef struct
 {
   int x;
   int y;
-  int **arr;
+  int arr[4][4];
   int size;
 } s_figures;
 
 const s_figures figures[] = {
-{1, 1, (int* []){(int []){3,3},(int []){3,3}}, 2},      // SQ
-{1, 1, (int* []){(int []){0,3,0},(int []){3,3,3},(int []){0,0,0}}, 3},  // T
-{1, 1, (int* []){(int []){0,3,3},(int []){3,3,0},(int []){0,0,0}}, 3},  // S
-{1, 1, (int* []){(int []){3,3,0},(int []){0,3,3},(int []){0,0,0}}, 3},  // Z
-{1, 1, (int* []){(int []){3,0,0},(int []){3,3,3},(int []){0,0,0}}, 3},  // ML
-{1, 1, (int* []){(int []){0,0,3},(int []){3,3,3},(int []){0,0,0}}, 3},  // L
-{1, 1, (int* []){(int []){3,3,3,3},(int []){0,0,0,0},(int []){0,0,0,0},(int []){0,0,0,0}}, 4},  // I
+{1, 1, {{0,0,0,0},{0,3,3,0},{0,3,3,0},{0,0,0,0}}, 4},  // SQ
+{1, 1, {{0,0,0,0},{0,3,3,3},{0,0,3,0},{0,0,0,0}}, 4},  // T
+{1, 1, {{0,0,0,0},{0,0,3,3},{0,3,3,0},{0,0,0,0}}, 4},  // S
+{1, 1, {{0,0,0,0},{0,3,3,0},{0,0,3,3},{0,0,0,0}}, 4},  // Z
+{1, 1, {{0,0,0,0},{0,3,0,0},{0,3,3,3},{0,0,0,0}}, 4},  // ML
+{1, 1, {{0,0,0,0},{0,0,0,3},{0,3,3,3},{0,0,0,0}}, 4},  // L
+{1, 1, {{0,0,0,0},{3,3,3,3},{0,0,0,0},{0,0,0,0}}, 4},  // I
 };
 
 s_figures tmp_figure, cur_figure;
 
-// index to symbol
+// цифра -> символ
 char arr_symbols[] = {' ', '#', '#', 'O'};
 
 /*
@@ -62,29 +62,19 @@ int msleep(long msec)
 // генерация новой фигуры
 int get_figure(int f, s_figures* figure)
 {
-  // освобождение памяти от предыдущей фигуры
-  for(int i = 0; i < figure->size; i++)
-  {
-    free(figure->arr[i]);
-  }
-  free(figure->arr);
-
-  // создание новой фигуры
   figure->x = rand() % (MAP_COL - figures[f].size - 1) + 1;
-  figure->y = 0;
+  figure->y = -1;
   figure->size = figures[f].size;
-  figure->arr = (int**)malloc(figure->size * sizeof(int*));
 
   for(int i = 0; i < figure->size; i++)
   {
-    figure->arr[i] = (int*)malloc(figure->size * sizeof(int));
     memcpy(figure->arr[i],  figures[f].arr[i], figure->size * sizeof(int));
   }
 
   return 0;
 }
 
-// наносим врезавшуюся фигуру на массив карты
+// вносим врезавшуюся фигуру в массив карты
 int figure_to_map(s_figures* figure)
 {
   int x = figure->x, y = figure->y; // коорд. фигуры
@@ -183,21 +173,20 @@ int check_collizion(s_figures* figure, int* dx, int* ni)
 // рисование фигуры
 int draw_figure(s_figures* figure, int* dy, int* dx, int tmp)
 {
-  int x, y; // коорд. фигуры
   int mx, my; // индекс массива карты
   int fx, fy; // индекс массива фигуры
   int ni = 0;
 
   if(tmp == 1) // у временной фигуры положение в предпросмотре
   {
-    y = 1;
-    x = MAP_COL + 2;
+    figure->y = 1;
+    figure->x = MAP_COL + 2;
 
     for(int i = 0; i < 5; i++)
     {
       for(int j = 0; j < 5; j++)
       {
-        mvaddch(y+i, x+j, arr_symbols[0]);
+        mvaddch(figure->y+i, figure->x+j, arr_symbols[0]);
       }      
     }
   }
@@ -208,9 +197,6 @@ int draw_figure(s_figures* figure, int* dy, int* dx, int tmp)
 
     // проверка коллизии
     check_collizion(figure, dx, &ni);
-
-    y = figure->y;
-    x = figure->x;
   }
 
   for(int i = 0; i < figure->size; i++)
@@ -218,7 +204,7 @@ int draw_figure(s_figures* figure, int* dy, int* dx, int tmp)
     for(int j = 0; j < figure->size; j++)
     {
       if(figure->arr[i][j] == 0) continue;
-      mvaddch(y+i, x+j, arr_symbols[figure->arr[i][j]]);
+      mvaddch(figure->y+i, figure->x+j, arr_symbols[figure->arr[i][j]]);
     }
   }
   *dy = 1;
@@ -291,6 +277,7 @@ int main(void)
   halfdelay(1);
 
   figure_new_iteration(&f, &f_tmp, &num_figures);
+  draw_map();
 
   while(run != 0)
   {
@@ -300,7 +287,7 @@ int main(void)
     switch(getch())
     {
       case KEY_UP: dy = 0; break;
-      case KEY_DOWN: dy = 1; break;
+      case KEY_DOWN: dy = 1, sf_tmp = sf; break;
       case KEY_LEFT: dx = -1, dy = 0; break;
       case KEY_RIGHT: dx = 1, dy = 0; break;
       case 'q': run = 0; break;
@@ -314,7 +301,7 @@ int main(void)
       continue;
     }
     
-    if(sf_tmp == sf || dx != 0)
+    if(sf_tmp >= sf || dx != 0)
     {
       draw_map();
       if(draw_figure(&cur_figure, &dy, &dx, 0) == 1)

@@ -9,7 +9,7 @@
 #include <ncurses.h>
 
 #define MAP_LINE 28
-#define MAP_COL 28
+#define MAP_COL 26
 
 int game_map[MAP_LINE][MAP_COL] = {0};
 
@@ -63,7 +63,7 @@ int msleep(long msec)
 int get_figure(int f, s_figures* figure)
 {
   figure->x = rand() % (MAP_COL - figures[f].size - 1) + 1;
-  figure->y = -1;
+  figure->y = 0;
   figure->size = figures[f].size;
 
   for(int i = 0; i < figure->size; i++)
@@ -74,46 +74,21 @@ int get_figure(int f, s_figures* figure)
   return 0;
 }
 
-// вносим врезавшуюся фигуру в массив карты
+// вносим врезавшуюся фигуру в массив поля
 int figure_to_map(s_figures* figure)
 {
   int x = figure->x, y = figure->y; // коорд. фигуры
-  int mx, my; // индекс массива карты
   int fx, fy; // индекс массива фигуры
-  
+
   for(int i = (y + figure->size - 1); i >= y; i--)
   {
     fy = i - y;
-    // проверка выхода за границы массива карты по Y
-    if(i > MAP_LINE - 1)
-    {
-      my = MAP_LINE - 1;
-    }
-    else
-    {
-      my = i;
-    }
-
     for(int j = (x + figure->size - 1); j >= x; j--)
     {
       fx = j - x;
-      // проверка выхода за границы массива карты по X
-      if(j >= MAP_COL - 1)
-      {
-        mx = MAP_COL - 1;
-      }
-      else if(j < 0)
-      {
-        mx = 0;
-      }
-      else
-      {
-        mx = j;
-      }
-      
       if(figure->arr[fy][fx] != 0)
       {
-        game_map[my][j] = figure->arr[fy][fx];
+        game_map[i][j] = figure->arr[fy][fx];
       }
     }
   }
@@ -121,49 +96,50 @@ int figure_to_map(s_figures* figure)
 }
 
 // проверка коллизии
-int check_collizion(s_figures* figure, int* dx, int* ni)
+int check_collizion(s_figures* figure, int* dx, int* dy, int* ni)
 {
-  int mx, my; // индекс массива карты
+  int mx, my; // индекс массива поля
   int fx, fy; // индекс массива фигуры
-  for(int i = (figure->y + figure->size - 1); i >= figure->y; i--)
+  for(int i = figure->y; i <= (figure->y + figure->size - 1); i++)
   {
     fy = i - figure->y;
 
-    // проверка выхода за границы массива карты по Y
-    if(i > MAP_LINE - 1)
+    // проверка выхода за границы массива поля по Y
+    if(i >= MAP_LINE - 2)
     {
-      my = MAP_LINE - 1;
+      my = MAP_LINE - 2;
     }
     else
     {
       my = i;
     }
 
-    for(int j = (figure->x + figure->size - 1); j >= figure->x; j--)
+    for(int j = figure->x; j <= (figure->x + figure->size - 1) ; j++)
     {
-      fx = j - figure->x;
-      // проверка выхода за границы массива карты по X
-      if(j > MAP_COL - 1)
+      // проверка выхода за границы массива поля по X
+      if(j >= MAP_COL - 1)
       {
         mx = MAP_COL - 1;
+        if(figure->arr[fy][j - figure->x] != 0) figure->x -= *dx;
       }
-      else if(j < 0)
+      else if(j <= 0)
       {
         mx = 0;
+        if(figure->arr[fy][j - figure->x] != 0) figure->x -= *dx;
       }
       else
       {
         mx = j;
       }
+      fx = j - figure->x;
 
-      if(game_map[my + 1][mx] + figure->arr[fy][fx] > 3 && *dx == 0)
-      {
-        *ni = 1;
-        figure_to_map(figure);
-      }
-      else if(game_map[my + 1][mx] + figure->arr[fy][fx] > 3)
+      if(game_map[my][mx] + figure->arr[fy][fx] >= 3*2)
       {
         figure->x -= *dx;
+      }
+      else if(game_map[my+1][mx] + figure->arr[fy][fx] > 3)
+      {
+        *ni = 1;
       }
     }
   }
@@ -171,11 +147,11 @@ int check_collizion(s_figures* figure, int* dx, int* ni)
 }
 
 // рисование фигуры
-int draw_figure(s_figures* figure, int* dy, int* dx, int tmp)
+int draw_figure(s_figures* figure, int* dx, int* dy, int tmp)
 {
-  int mx, my; // индекс массива карты
+  int mx, my; // индекс массива поля
   int fx, fy; // индекс массива фигуры
-  int ni = 0;
+  int ni = 0, cnt = 0;
 
   if(tmp == 1) // у временной фигуры положение в предпросмотре
   {
@@ -187,7 +163,7 @@ int draw_figure(s_figures* figure, int* dy, int* dx, int tmp)
       for(int j = 0; j < 5; j++)
       {
         mvaddch(figure->y+i, figure->x+j, arr_symbols[0]);
-      }      
+      }
     }
   }
   else // у текущей динамическое положение
@@ -196,7 +172,7 @@ int draw_figure(s_figures* figure, int* dy, int* dx, int tmp)
     figure->x += *dx;
 
     // проверка коллизии
-    check_collizion(figure, dx, &ni);
+    check_collizion(figure, dx, dy, &ni);
   }
 
   for(int i = 0; i < figure->size; i++)
@@ -207,12 +183,44 @@ int draw_figure(s_figures* figure, int* dy, int* dx, int tmp)
       mvaddch(figure->y+i, figure->x+j, arr_symbols[figure->arr[i][j]]);
     }
   }
-  *dy = 1;
+
+  *dy = (ni == 1 ? 0 : 1);
   *dx = 0;
+
   return ni;
 }
 
-// рисование карты
+// поворачивание фигур
+int rotate(s_figures* figure, int* dx, int* dy)
+{
+  s_figures rotate_f;
+  rotate_f.x = figure->x;
+  rotate_f.y = figure->y;
+  rotate_f.size = figure->size;
+
+  const int s = figure->size;
+
+  int ni = 0;
+
+  for(int i  = 0; i < s; i++)
+  {
+    for(int j = 0; j < s; j++)
+    {
+      int ii = s - j - 1;
+      int jj = i;
+      rotate_f.arr[i][j] = figure->arr[ii][jj];
+    }
+  }
+
+  if(check_collizion(&rotate_f, dx, dy, &ni) == 0)
+  {
+    memcpy(figure->arr, rotate_f.arr, sizeof(figure->arr));
+  }
+//  memcpy(figure->arr, rotate_f.arr, sizeof(figure->arr));
+  return 0;
+}
+
+// рисование игрового поля
 int draw_map()
 {
   for(int y = 0; y < MAP_LINE; y++)
@@ -233,15 +241,22 @@ int draw_map()
 // проверка геймовера
 int check_gameover()
 {
-  int y = 1;
-  for(int x = 0; x < MAP_COL; x++)
-  {
-    if(game_map[y][x] > 2)
-    {
-      return 1;
-    }
+  int cx = 0, cy = 0;
+  int check_lines = 4;
 
+  for(int y = 1; y <= check_lines; y++)
+  {
+    for(int x = 0; x < MAP_COL; x++)
+    {
+      if(game_map[y][x] > 2)
+      {
+        cx = 1;
+      }
+    }
+    if(cx == 1) cy += 1;
+    cx = 0;
   }
+  if(cy >= check_lines) return 1;
   return 0;
 }
 
@@ -266,6 +281,7 @@ int main(void)
   int num_figures; // кол-во фигур
   int dx = 0, dy = 1; // смещение
   int sf_tmp = 0, sf = 3; // скорость фигуры;
+  int cnt_shift = 0; // счетчик после коллизии, чтобы успеть сместить фигуру
   num_figures = sizeof(figures) / sizeof(figures[0]);
   f = rand() % (num_figures);
 
@@ -282,39 +298,50 @@ int main(void)
   while(run != 0)
   {
     msleep(100);
-    
+
     // слушаем нажатие клавиш
     switch(getch())
     {
-      case KEY_UP: dy = 0; break;
-      case KEY_DOWN: dy = 1, sf_tmp = sf; break;
+      case KEY_UP:
+        dy = 0;
+        draw_map();
+        rotate(&cur_figure, &dx, &dy);
+        draw_figure(&cur_figure, &dx, &dy, 0);
+        break;
+      case KEY_DOWN: sf_tmp = sf; break;
       case KEY_LEFT: dx = -1, dy = 0; break;
       case KEY_RIGHT: dx = 1, dy = 0; break;
       case 'q': run = 0; break;
     }
-    flushinp();
-
 
     if(check_gameover() == 1)
     {
       mvprintw(MAP_LINE + 1, 0, "GAME OVER");
       continue;
     }
-    
+
     if(sf_tmp >= sf || dx != 0)
     {
       draw_map();
-      if(draw_figure(&cur_figure, &dy, &dx, 0) == 1)
+      if(draw_figure(&cur_figure, &dx, &dy, 0) == 1)
       {
-        figure_new_iteration(&f, &f_tmp, &num_figures);
+        if(cnt_shift >= 1)
+        {
+          cnt_shift = 0;
+          figure_to_map(&cur_figure);
+          figure_new_iteration(&f, &f_tmp, &num_figures);
+        }
+        cnt_shift++;
       }
       else
       {
-        draw_figure(&tmp_figure, &dy, &dx, 1);
+        cnt_shift = 0;
+        draw_figure(&tmp_figure, &dx, &dy, 1);
       }
       sf_tmp = 0;
     }
     sf_tmp += 1;
+    flushinp();
   }
 
   nodelay(stdscr, 0);

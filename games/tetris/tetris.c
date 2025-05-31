@@ -297,7 +297,7 @@ int main(void)
 
   while(run != 0)
   {
-    msleep(100);
+    msleep(50);
 
     // слушаем нажатие клавиш
     switch(getch())

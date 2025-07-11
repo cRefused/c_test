@@ -1,1 +1,0 @@
-gcc ./tennis.c -l ncurses -pthread -o ./tennis
